@@ -1,0 +1,91 @@
+.file-manager {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  background-color: var(--keyboard-bg);
+  border-bottom: 1px solid var(--border-color);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.file-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.file-manager-title {
+  font-weight: 600;
+  color: var(--text-color);
+  font-size: 16px;
+  margin-right: 8px;
+}
+
+.file-input {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  min-width: 200px;
+  transition: border-color 0.2s;
+}
+
+.file-input:focus {
+  border-color: var(--primary-color);
+}
+
+.file-select {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  min-width: 150px;
+  background-color: white;
+  cursor: pointer;
+}
+
+.file-select:focus {
+  border-color: var(--primary-color);
+}
+
+.btn-save, .btn-load {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-save {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.btn-save:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-save:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.btn-load {
+  background-color: white;
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+.btn-load:hover {
+  background-color: #f3f4f6;
+}
+
+.btn-load:disabled {
+  color: #9ca3af;
+  cursor: not-allowed;
+}
