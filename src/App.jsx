@@ -11,7 +11,7 @@ function App() {
   const [focusedInput, setFocusedInput] = useState("document");
   const [selectedCharId, setSelectedCharId] = useState(null);
   const [findText, setFindText] = useState("");
-  
+
   const [documents, setDocuments] = useState(() => [{
     id: Date.now().toString() + Math.random().toString(),
     textData: [],
@@ -115,8 +115,6 @@ function App() {
       };
     });
   };
-
-
 
 
   const handleApplyAll = () => {
@@ -244,14 +242,7 @@ function App() {
               }}
             />
             <button onClick={() => {setFindText(""); setFocusedInput("document");}}>X</button>
-            {/* <input 
-              type="text" 
-              placeholder="Replace..." 
-              value={replaceText}
-              readOnly
-              onFocus={() => setFocusedInput("replace")}
-              style={{ padding: '5px', borderRadius: '4px', border: focusedInput === "replace" ? '2px solid #3b82f6' : '1px solid #ccc', width: '80px', textAlign: 'center' }}
-            /> */}
+            
        </div>
         <StyleToolbar 
           currentStyle={currentStyle} 
