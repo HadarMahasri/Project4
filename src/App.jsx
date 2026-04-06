@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import './App.css';
-import DocumentWindow from './components/DocumentWindow';
-import StyleToolbar from './components/StyleToolbar';
-import VirtualKeyboard from './components/VirtualKeyboard';
-import FileManager from './components/FileManager';
-import LoginScreen from './components/LoginScreen';
+import DocumentWindow from './components/DocumentWindow/DocumentWindow';
+import StyleToolbar from './components/StyleToolbar/StyleToolbar';
+import VirtualKeyboard from './components/VirtualKeyboard/VirtualKeyboard';
+import FileManager from './components/FileManager/FileManager';
+import LoginScreen from './components/LoginScreen/LoginScreen';
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);

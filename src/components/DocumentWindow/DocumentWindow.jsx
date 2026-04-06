@@ -1,5 +1,5 @@
 import React from 'react';
-import TextDisplay from './TextDisplay';
+import TextDisplay from '../TextDisplay/TextDisplay';
 import './DocumentWindow.css';
 
 const DocumentWindow = ({ document, isActive, onClick, onClose }) => {
