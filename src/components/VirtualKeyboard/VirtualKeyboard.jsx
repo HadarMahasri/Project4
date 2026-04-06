@@ -5,6 +5,11 @@ const EN_LAYOUT = [
   ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
   ['z', 'x', 'c', 'v', 'b', 'n', 'm']
 ];
+const SYMBOL_LAYOUT = [
+  ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+  ['@', '#', '$', '_', '&', '-', '+', '(', ')', '/'],
+  ['*', '"', "'", ':', ';', '!', '?', ',']
+];
 
 const HE_LAYOUT = [
   ['/', "'", 'ק', 'ר', 'א', 'ט', 'ו', 'ן', 'ם', 'פ'],
@@ -14,22 +19,24 @@ const HE_LAYOUT = [
 
 const EMOJI_LAYOUT = [
   ['😀', '😂', '🥰', '😎', '🤔', '😭', '😡', '👍', '🙏', '🔥'],
-  ['❤️', '🎉', '🌟', '🚀', '🐶', '🐱', 'pizza', '☕', '⚽', '🚗']
+  ['❤️', '🎉', '🌟', '🚀', '🐶', '🐱', '🍕', '☕', '⚽', '🚗']
 ];
 
 export default function VirtualKeyboard({ onKeyPress, onDelete, onDeleteWord, onDeleteAll }) {
-  const [lang, setLang] = useState('EN'); // EN, HE, EMOJI
+  const [lang, setLang] = useState('EN'); 
 
   const getLayout = () => {
     if (lang === 'EN') return EN_LAYOUT;
     if (lang === 'HE') return HE_LAYOUT;
+    if (lang === 'SYMBOL') return SYMBOL_LAYOUT;
     return EMOJI_LAYOUT;
   };
 
   const toggleLang = () => {
-    if (lang === 'EN') setLang('HE');
-    else if (lang === 'HE') setLang('EMOJI');
-    else setLang('EN');
+    if (lang === 'HE') setLang('EN');
+    else if (lang === 'EN') setLang('SYMBOL'); 
+    else if (lang === 'SYMBOL') setLang('EMOJI'); 
+    else setLang('HE'); 
   };
 
   return (
@@ -57,7 +64,7 @@ export default function VirtualKeyboard({ onKeyPress, onDelete, onDeleteWord, on
               className="key-btn" 
               onClick={() => onKeyPress(char)}
             >
-              {char === 'pizza' ? '🍕' : char}
+              {char}
             </button>
           ))}
         </div>

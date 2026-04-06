@@ -2,7 +2,7 @@ import React from 'react';
 import TextDisplay from '../TextDisplay/TextDisplay';
 import './DocumentWindow.css';
 
-const DocumentWindow = ({ document, isActive, onClick, onClose }) => {
+const DocumentWindow = ({ document, isActive, onClick, onClose,searchTerm, selectedCharId, onSelectChar }) => {
   const { fileName, textData } = document;
   
   const handleClose = (e) => {
@@ -24,7 +24,12 @@ const DocumentWindow = ({ document, isActive, onClick, onClose }) => {
         </button>
       </div>
       <div className="document-body">
-        <TextDisplay text={textData} />
+        <TextDisplay
+         text={textData}
+         searchTerm={searchTerm}
+         selectedCharId={selectedCharId} 
+         onSelectChar={onSelectChar}
+        />
       </div>
     </div>
   );

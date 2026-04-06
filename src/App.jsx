@@ -8,6 +8,10 @@ import LoginScreen from './components/LoginScreen/LoginScreen';
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
+  const [focusedInput, setFocusedInput] = useState("document");
+  const [selectedCharId, setSelectedCharId] = useState(null);
+  const [findText, setFindText] = useState("");
+  
   const [documents, setDocuments] = useState(() => [{
     id: Date.now().toString() + Math.random().toString(),
     textData: [],
@@ -16,6 +20,8 @@ function App() {
   }]);
   const [activeDocId, setActiveDocId] = useState(documents[0].id);
 
+//כברירת מחדל סרגל הכלים והתו שנכתוב יהיה בעל צבע שחור,בגודל של 16 ובפונט דיפולטי
+
   const [currentStyle, setCurrentStyle] = useState({
     color: '#000000',
     fontSize: '16px',
@@ -23,6 +29,8 @@ function App() {
   });
 
   const activeDoc = documents.find(d => d.id === activeDocId);
+
+//פונקציה למציאת המסמך הפעיל,והחזרתו לאחר העדכון(לפי הפעולה שלחצנו)
 
   const updateActiveDoc = (updaterFn) => {
     if (!activeDocId) return;
@@ -37,6 +45,7 @@ function App() {
     );
   };
 
+//פונקציה שמחזירה למצב הקודם על ידי שיחזור ההסטוריה
   const undo = () => {
     updateActiveDoc(doc => {
       if (doc.history.length > 0) {
@@ -47,8 +56,26 @@ function App() {
       return {};
     });
   };
-
+//בכל לחיצה של תו על המקלדת הוירטואלית,התו מוצג על המסך בתוספת מה שהיה קודם על המסך
+//והמצב נשמר בהסטוריה רגע לפני השינוי כדי שיהיה ניתו לחזור אליו אחורה
   const handleKeyPress = (char) => {
+    if (selectedCharId) {
+    updateActiveDoc(doc => {
+      const newHistory = [...doc.history, doc.textData].slice(-10);
+      const newTextData = doc.textData.map(item => {
+        if (item.id === selectedCharId) {
+          return { ...item, char: char }; // מחליף רק את התו הספציפי!
+        }
+        return item;
+      });
+      return { textData: newTextData,history: newHistory };
+    });
+    setSelectedCharId(null); // מבטל את הבחירה אחרי שהחלפנו
+  }
+   else if (focusedInput === "find") {
+    setFindText(char); // המקלדת הווירטואלית כותבת לחיפוש
+  }
+   else {
     updateActiveDoc(doc => {
       const newHistory = [...doc.history, doc.textData].slice(-10);
       const newTextData = [...doc.textData, {
@@ -58,15 +85,17 @@ function App() {
       }];
       return { textData: newTextData, history: newHistory };
     });
-  };
 
+    }
+  };
+//פונקציה למחיקת תו בודד מהמסמך:שומרים מצב בהסטוריה ואז מוחקים תו ממערך התווים
   const handleDelete = () => {
     updateActiveDoc(doc => ({
       history: [...doc.history, doc.textData].slice(-10),
       textData: doc.textData.slice(0, -1)
     }));
   };
-
+//פונקציה למחיקת מסמך שלם על ידי איפוס מערך התווים
   const handleDeleteAll = () => {
     updateActiveDoc(doc => ({
       history: [...doc.history, doc.textData].slice(-10),
@@ -86,6 +115,9 @@ function App() {
       };
     });
   };
+
+
+
 
   const handleApplyAll = () => {
     updateActiveDoc(doc => ({
@@ -186,12 +218,41 @@ function App() {
               isActive={doc.id === activeDocId}
               onClick={setActiveDocId}
               onClose={handleDocumentClose}
+              searchTerm={findText}
+              selectedCharId={selectedCharId} 
+              onSelectChar={setSelectedCharId}
             />
           ))
         )}
       </div>
 
       <div className="editor-controls" style={{ opacity: activeDocId ? 1 : 0.5, pointerEvents: activeDocId ? 'auto' : 'none' }}>
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '10px' }}>
+            <input 
+              type="text" 
+              placeholder="🔍 Search..." 
+              maxLength="1"
+              value={findText}
+              readOnly //  מונע הקלדה מהמקלדת הפיזית
+              onFocus={() => setFocusedInput("find")}
+              style={{ 
+                padding: '5px', 
+                borderRadius: '4px', 
+                border: focusedInput === "find" ? '2px solid #3b82f6' : '1px solid #ccc',
+                cursor: 'pointer',
+                textAlign: 'center'
+              }}
+            />
+            <button onClick={() => {setFindText(""); setFocusedInput("document");}}>X</button>
+            {/* <input 
+              type="text" 
+              placeholder="Replace..." 
+              value={replaceText}
+              readOnly
+              onFocus={() => setFocusedInput("replace")}
+              style={{ padding: '5px', borderRadius: '4px', border: focusedInput === "replace" ? '2px solid #3b82f6' : '1px solid #ccc', width: '80px', textAlign: 'center' }}
+            /> */}
+       </div>
         <StyleToolbar 
           currentStyle={currentStyle} 
           setCurrentStyle={setCurrentStyle} 
