@@ -1,7 +1,7 @@
-export default function StyleToolbar({ currentStyle, setCurrentStyle, onApplyAll, onUndo, canUndo }) {
-  const handleStyleChange = (e) => {
+export default function StyleToolbar({ currentStyle, onStyleChange, onApplyAll, onUndo, canUndo }) {
+  const handleLocalStyleChange = (e) => {
     const { name, value } = e.target;
-    setCurrentStyle(prev => ({ ...prev, [name]: value }));
+    onStyleChange(name, value);
   };
 
   return (
@@ -12,13 +12,13 @@ export default function StyleToolbar({ currentStyle, setCurrentStyle, onApplyAll
           type="color" 
           name="color" 
           value={currentStyle.color} 
-          onChange={handleStyleChange} 
+          onChange={handleLocalStyleChange} 
         />
       </label>
       
       <label>
         Size:
-        <select name="fontSize" value={currentStyle.fontSize} onChange={handleStyleChange}>
+        <select name="fontSize" value={currentStyle.fontSize} onChange={handleLocalStyleChange}>
           <option value="12px">Small (12px)</option>
           <option value="16px">Normal (16px)</option>
           <option value="24px">Large (24px)</option>
@@ -28,7 +28,7 @@ export default function StyleToolbar({ currentStyle, setCurrentStyle, onApplyAll
 
       <label>
         Font:
-        <select name="fontFamily" value={currentStyle.fontFamily} onChange={handleStyleChange}>
+        <select name="fontFamily" value={currentStyle.fontFamily} onChange={handleLocalStyleChange}>
           <option value="system-ui, -apple-system, sans-serif">System Default</option>
           <option value="Arial, sans-serif">Arial</option>
           <option value="'Courier New', Courier, monospace">Courier New</option>

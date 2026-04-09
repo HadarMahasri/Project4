@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
 import DocumentWindow from './components/DocumentWindow/DocumentWindow';
 import StyleToolbar from './components/StyleToolbar/StyleToolbar';
@@ -29,6 +29,20 @@ function App() {
   });
 
   const activeDoc = documents.find(d => d.id === activeDocId);
+
+   // במידה ובחרנו בתו מיוחד, הסרגל יתאים את עצמו לצבע ולעיצוב של התו עצמו!
+  useEffect(() => {
+    if (selectedCharId && activeDoc) {
+      const charObj = activeDoc.textData.find(c => c.id === selectedCharId);
+      if (charObj) {
+        setCurrentStyle({
+          color: charObj.color || '#000000',
+          fontSize: charObj.fontSize || '16px',
+          fontFamily: charObj.fontFamily || 'system-ui, -apple-system, sans-serif'
+        });
+      }
+    }
+  }, [selectedCharId, activeDocId]); // רק עובר כשהיה שינוי תו או החלפת טאב
 
 //פונקציה למציאת המסמך הפעיל,והחזרתו לאחר העדכון(לפי הפעולה שלחצנו)
 
@@ -119,6 +133,24 @@ function App() {
         textData: doc.textData.slice(0, i + 1)//מחזיר את המסמך ללא המילה שמחקנו
       };
     });
+  };
+
+   const handleStyleChange = (name, value) => {
+    setCurrentStyle(prev => ({ ...prev, [name]: value }));
+    
+    // אם מסומן תו כלשהו כרגע, תשנה לו את העיצוב מיד למאפיין החדש!
+    if (selectedCharId) {
+      updateActiveDoc(doc => {
+        const newHistory = [...doc.history, doc.textData].slice(-10);
+        const newTextData = doc.textData.map(item => {
+          if (item.id === selectedCharId) {
+            return { ...item, [name]: value }; // עדכון של צבע, פונט או גודל לתו הספציפי
+          }
+          return item;
+        });
+        return { textData: newTextData, history: newHistory };
+      });
+    }
   };
 
 //פונקציה שמכילה את העיצוב הנוכחי על כל המסמך
@@ -283,7 +315,7 @@ function App() {
        {/*/כלי העיצוב*/}
         <StyleToolbar 
           currentStyle={currentStyle} 
-          setCurrentStyle={setCurrentStyle} 
+          onStyleChange={handleStyleChange} 
           onApplyAll={handleApplyAll}
           onUndo={undo}
           canUndo={activeDoc?.history?.length > 0}
