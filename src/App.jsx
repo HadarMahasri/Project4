@@ -255,9 +255,9 @@ function App() {
   return (
     <div className="app-container">
       {/*הבר למעלה*/}
-      <header className="app-header" style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 24px', backgroundColor: '#1f2937', color: 'white' }}>
+      <header className="app-header" style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 24px', backgroundColor: '#5799f6', color: 'white' }}>
         <div className="user-info">👤 Logged in as: <strong>{currentUser}</strong></div>
-        <button onClick={handleLogout} style={{ background: 'rgba(255,255,255,0.1)', color: 'white', padding: '6px 12px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)' }}>
+        <button onClick={handleLogout} style={{ background: 'rgba(170, 174, 177, 0.1)', color: 'white', padding: '6px 12px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)' }}>
           Logout
         </button>
       </header>
