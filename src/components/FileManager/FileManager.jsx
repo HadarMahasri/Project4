@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './FileManager.css';
 
-const FileManager = ({ activeDocument, onFileOpened, onNewDocument, onSaveDocument, currentUser }) => {
+const FileManager = ({ activeDocument, onFileOpened, onNewDocument, onSaveDocument, currentUser,onSaveAs }) => {
   const [savedFiles, setSavedFiles] = useState([]);
   const [fileNameInput, setFileNameInput] = useState('');
   const [selectedFile, setSelectedFile] = useState('');
@@ -95,6 +95,14 @@ const FileManager = ({ activeDocument, onFileOpened, onNewDocument, onSaveDocume
           disabled={!hasActive || !fileNameInput.trim()}
         >
           💾 Save
+        </button>
+        <button 
+          className="btn-save" 
+          onClick={onSaveAs} 
+          disabled={!hasActive}
+          style={{ marginLeft: '5px', backgroundColor: '#2196F3' }} 
+        >
+          📥 Save As
         </button>
       </div>
 

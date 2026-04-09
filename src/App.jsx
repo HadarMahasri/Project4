@@ -58,24 +58,28 @@ function App() {
   };
 //בכל לחיצה של תו על המקלדת הוירטואלית,התו מוצג על המסך בתוספת מה שהיה קודם על המסך
 //והמצב נשמר בהסטוריה רגע לפני השינוי כדי שיהיה ניתו לחזור אליו אחורה
+
+ 
   const handleKeyPress = (char) => {
     if (selectedCharId) {
     updateActiveDoc(doc => {
+      console.log(doc);
       const newHistory = [...doc.history, doc.textData].slice(-10);
       const newTextData = doc.textData.map(item => {
+        
         if (item.id === selectedCharId) {
-          return { ...item, char: char }; // מחליף רק את התו הספציפי!
+          return { ...item, char: char }; //מחליף רק את התו שבחרנו ומשאיר את העיצוב
         }
         return item;
       });
       return { textData: newTextData,history: newHistory };
     });
-    setSelectedCharId(null); // מבטל את הבחירה אחרי שהחלפנו
+    setSelectedCharId(null); //מבטל את הבחירה אחרי שהחלפנו
   }
-   else if (focusedInput === "find") {
-    setFindText(char); // המקלדת הווירטואלית כותבת לחיפוש
+   else if (focusedInput === "find") { //נמצאים במצב חיפוש
+    setFindText(char); //כותבים לתיבת החיפוש
   }
-   else {
+   else {//הקלדה רגילה למסמך
     updateActiveDoc(doc => {
       const newHistory = [...doc.history, doc.textData].slice(-10);
       const newTextData = [...doc.textData, {
@@ -103,27 +107,30 @@ function App() {
     }));
   };
 
+//פונקציה למחיקת מילה
   const handleDeleteWord = () => {
     updateActiveDoc(doc => {
-      if (doc.textData.length === 0) return {};
+      if (doc.textData.length === 0) return {};//אין מה למחוק
       let i = doc.textData.length - 1;
-      while(i >= 0 && doc.textData[i].char === ' ') i--;
-      while(i >= 0 && doc.textData[i].char !== ' ') i--;
+      while(i >= 0 && doc.textData[i].char === ' ') i--;//ניקוי רווחים מיותרים בסוף
+      while(i >= 0 && doc.textData[i].char !== ' ') i--;//כל עוד אנחנו נמצאים על תו ולא הגענו לרווח
       return {
         history: [...doc.history, doc.textData].slice(-10),
-        textData: doc.textData.slice(0, i + 1)
+        textData: doc.textData.slice(0, i + 1)//מחזיר את המסמך ללא המילה שמחקנו
       };
     });
   };
 
-
+//פונקציה שמכילה את העיצוב הנוכחי על כל המסמך
   const handleApplyAll = () => {
+
     updateActiveDoc(doc => ({
       history: [...doc.history, doc.textData].slice(-10),
       textData: doc.textData.map(item => ({ ...item, ...currentStyle }))
     }));
   };
 
+//פונקציה ליצירת מסמך חדש
   const handleNewDocument = () => {
     const newDoc = {
       id: Date.now().toString() + Math.random().toString(),
@@ -131,10 +138,11 @@ function App() {
       history: [],
       fileName: ''
     };
-    setDocuments(prev => [...prev, newDoc]);
-    setActiveDocId(newDoc.id);
+    setDocuments(prev => [...prev, newDoc]);//שמים את המסמך החדש בסוף המערך
+    setActiveDocId(newDoc.id);//שמים את הפוקוס על המסמך החדש שנוצר
   };
 
+//פונקציה לפתיחת מסמך קיים לפי השם שלו
   const handleFileOpened = (fileName, data) => {
     const newDoc = {
       id: Date.now().toString() + Math.random().toString(),
@@ -145,16 +153,16 @@ function App() {
     setDocuments(prev => [...prev, newDoc]);
     setActiveDocId(newDoc.id);
   };
-
+//פונקציה לסגירת מסמך
   const handleDocumentClose = (docToRemove) => {
-    if (docToRemove.textData.length > 0 && !window.confirm("Close this document? Unsaved changes may be lost.")) {
+    if (docToRemove.textData.length > 0 && !window.confirm("Close this document? Unsaved changes may be lost.")) {//המסמך לא ריק וגם לא אישרנו למחוק אז לא יקרה כלום
       return;
     }
     setDocuments(prev => {
-      const remaining = prev.filter(d => d.id !== docToRemove.id);
-      if (activeDocId === docToRemove.id) {
-        if (remaining.length > 0) {
-          setActiveDocId(remaining[remaining.length - 1].id);
+      const remaining = prev.filter(d => d.id !== docToRemove.id);//משאירים את כל המסמכים חוץ מהמסמך שמחקנו
+      if (activeDocId === docToRemove.id) {//אם הפוקוס היה על המסמך שרוצים למחוק
+        if (remaining.length > 0) {//אם נשארו מסמכים בדף
+          setActiveDocId(remaining[remaining.length - 1].id);//נשים פוקוס על המסמך האחרון במערך
         } else {
           setActiveDocId(null);
         }
@@ -162,16 +170,40 @@ function App() {
       return remaining;
     });
   };
-
+  
+//פונקציה לשמירת מסמך
   const handleDocumentSave = (docId, newFileName) => {
     setDocuments(prev => prev.map(doc => {
       if (doc.id === docId) {
         return { ...doc, fileName: newFileName };
       }
+      console.log(doc);
       return doc;
     }));
   };
 
+  //פונקציה לשמירת מסמך במחשב בשם שרוצים
+  const handleSaveAsDownload = () => {
+  const activeDoc = documents.find(d => d.id === activeDocId);
+  if (!activeDoc) return;
+  const customName = prompt("Enter a name for your file:", activeDoc.fileName || "document");//חלון קופץ ששואל את המשתמש באיזה שם לשמור את המסמך
+  
+  if (customName === null || customName.trim() === "") {//אם המשתמש לחץ על ביטול אז לא שומרים
+    return; 
+  } 
+  const textContent = activeDoc.textData.map(item => item.char).join('');//לוקחים את התווים והופכים למחרוזת ארוכה
+  const blob = new Blob([textContent], { type: 'text/plain' });//הגדרת סוג הנתונים בתור קובץ טקסט
+  const url = URL.createObjectURL(blob);//הגדרת כתובת זמנית שמצביעה על הקובץ שיצרנו בזיכרון
+  const link = document.createElement('a');//יוצר תגית a עם הקישור לכתובת
+  link.href = url;
+ 
+  link.download = `${activeDoc.fileName || 'document'}.txt`; //מוריד את המסמך למחשב
+  
+  link.click();//ככה המשתמש רואה את הקובץ שיורד ישירות להורדות
+  URL.revokeObjectURL(url);//ניקוי הזיכרון
+};
+
+//פונקציה להתנתקות מהמערכת
   const handleLogout = () => {
     setCurrentUser(null);
     const newDocId = Date.now().toString() + Math.random().toString();
@@ -190,21 +222,24 @@ function App() {
 
   return (
     <div className="app-container">
+      {/*הבר למעלה*/}
       <header className="app-header" style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 24px', backgroundColor: '#1f2937', color: 'white' }}>
         <div className="user-info">👤 Logged in as: <strong>{currentUser}</strong></div>
         <button onClick={handleLogout} style={{ background: 'rgba(255,255,255,0.1)', color: 'white', padding: '6px 12px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)' }}>
           Logout
         </button>
       </header>
-      
+
+      {/*שליחת כל הפרמטרים של מנהל הקבצים*/}
       <FileManager 
         activeDocument={activeDoc}
         onFileOpened={handleFileOpened}
         onNewDocument={handleNewDocument}
         onSaveDocument={handleDocumentSave}
         currentUser={currentUser}
+        onSaveAs={handleSaveAsDownload}
       />
-      
+      {/*/ חלונית המסמך הערוך*/}
       <div className="documents-container">
         {documents.length === 0 ? (
           <div style={{ margin: 'auto', color: '#9ca3af' }}>No documents open. Create or open one to start.</div>
@@ -223,8 +258,9 @@ function App() {
           ))
         )}
       </div>
-
+      
       <div className="editor-controls" style={{ opacity: activeDocId ? 1 : 0.5, pointerEvents: activeDocId ? 'auto' : 'none' }}>
+        {/* חיפוש */} 
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '10px' }}>
             <input 
               type="text" 
@@ -244,6 +280,7 @@ function App() {
             <button onClick={() => {setFindText(""); setFocusedInput("document");}}>X</button>
             
        </div>
+       {/*/כלי העיצוב*/}
         <StyleToolbar 
           currentStyle={currentStyle} 
           setCurrentStyle={setCurrentStyle} 
@@ -251,6 +288,7 @@ function App() {
           onUndo={undo}
           canUndo={activeDoc?.history?.length > 0}
         />
+        {/*המקלדת הוירטואלית*/ }
         <VirtualKeyboard 
           onKeyPress={handleKeyPress} 
           onDelete={handleDelete}
