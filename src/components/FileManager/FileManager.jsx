@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './FileManager.css';
 
-const FileManager = ({ activeDocument, onFileOpened, onNewDocument, onSaveDocument, currentUser,onSaveAs }) => {
+const FileManager = ({ activeDocument, onFileOpened, onNewDocument, onSaveDocument, currentUser }) => {
   const [savedFiles, setSavedFiles] = useState(() => {
     if (!currentUser) return [];
     try {
@@ -23,6 +23,20 @@ const FileManager = ({ activeDocument, onFileOpened, onNewDocument, onSaveDocume
     setPrevActiveId('');
     setFileNameInput('');
   }
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      if (!currentUser) return;
+      try {
+        const filesJson = localStorage.getItem(`editor_files_${currentUser}`);
+        setSavedFiles(filesJson ? JSON.parse(filesJson) : []);
+      } catch (e) {
+        console.error("Failed to load file list", e);
+      }
+    };
+    window.addEventListener('fileListUpdated', handleUpdate);
+    return () => window.removeEventListener('fileListUpdated', handleUpdate);
+  }, [currentUser]);
 
   const handleSave = () => {
     if (!activeDocument || !fileNameInput.trim() || !currentUser) return;
@@ -85,14 +99,6 @@ const FileManager = ({ activeDocument, onFileOpened, onNewDocument, onSaveDocume
           disabled={!hasActive || !fileNameInput.trim()}
         >
           💾 Save
-        </button>
-        <button 
-          className="btn-save" 
-          onClick={onSaveAs} 
-          disabled={!hasActive}
-          style={{ marginLeft: '5px', backgroundColor: '#2196F3' }} 
-        >
-          📥 Save As
         </button>
       </div>
 

@@ -188,25 +188,30 @@ function App() {
   };
 //פונקציה לסגירת מסמך
   const handleDocumentClose = (docToRemove) => {
-    if (docToRemove.textData.length > 0) {
+    if (!docToRemove) return;
+    if (docToRemove.textData && docToRemove.textData.length > 0) {
       setDocToClose(docToRemove);
       return;
     }
-    performClose(docToRemove.id);
+    if (docToRemove.id) {
+      performClose(docToRemove.id);
+    }
   };
 
   const performClose = (docId) => {
-    setDocuments(prev => {
-      const remaining = prev.filter(d => d.id !== docId);//משאירים את כל המסמכים חוץ מהמסמך שמחקנו
-      if (activeDocId === docId) {//אם הפוקוס היה על המסמך שרוצים למחוק
-        if (remaining.length > 0) {//אם נשארו מסמכים בדף
-          setActiveDocId(remaining[remaining.length - 1].id);//נשים פוקוס על המסמך האחרון במערך
-        } else {
-          setActiveDocId(null);
-        }
+    let newActiveDocId = activeDocId;
+    const remaining = documents.filter(d => d.id !== docId);
+    
+    if (activeDocId === docId) {
+      if (remaining.length > 0) {
+        newActiveDocId = remaining[remaining.length - 1].id;
+      } else {
+        newActiveDocId = null;
       }
-      return remaining;
-    });
+    }
+    
+    setDocuments(remaining);
+    setActiveDocId(newActiveDocId);
     setDocToClose(null);
   };
 
@@ -217,14 +222,23 @@ function App() {
     if (customName === null || customName.trim() === "") {
       return; // סעיף ביטול - לא עושים כלום, החלון לא נסגר
     } 
-    const textContent = docToClose.textData.map(item => item.char).join('');
-    const blob = new Blob([textContent], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${customName}.txt`;
-    link.click();
-    URL.revokeObjectURL(url);
+
+    const name = customName.trim();
+    // שמירה ל-localStorage
+    localStorage.setItem(`editor_file_${currentUser}_${name}`, JSON.stringify(docToClose.textData));
+
+    // עדכון רשימת הקבצים הכללית למשתמש
+    try {
+      const filesJson = localStorage.getItem(`editor_files_${currentUser}`);
+      let updatedFiles = filesJson ? JSON.parse(filesJson) : [];
+      if (!updatedFiles.includes(name)) {
+        updatedFiles.push(name);
+        localStorage.setItem(`editor_files_${currentUser}`, JSON.stringify(updatedFiles));
+        window.dispatchEvent(new CustomEvent('fileListUpdated'));
+      }
+    } catch (e) {
+      console.error("Failed to save to file list", e);
+    }
     
     performClose(docToClose.id);
   };
@@ -240,26 +254,7 @@ function App() {
     }));
   };
 
-  //פונקציה לשמירת מסמך במחשב בשם שרוצים
-  const handleSaveAsDownload = () => {
-  const activeDoc = documents.find(d => d.id === activeDocId);
-  if (!activeDoc) return;
-  const customName = prompt("Enter a name for your file:", activeDoc.fileName || "document");//חלון קופץ ששואל את המשתמש באיזה שם לשמור את המסמך
-  
-  if (customName === null || customName.trim() === "") {//אם המשתמש לחץ על ביטול אז לא שומרים
-    return; 
-  } 
-  const textContent = activeDoc.textData.map(item => item.char).join('');//לוקחים את התווים והופכים למחרוזת ארוכה
-  const blob = new Blob([textContent], { type: 'text/plain' });//הגדרת סוג הנתונים בתור קובץ טקסט
-  const url = URL.createObjectURL(blob);//הגדרת כתובת זמנית שמצביעה על הקובץ שיצרנו בזיכרון
-  const link = document.createElement('a');//יוצר תגית a עם הקישור לכתובת
-  link.href = url;
- 
-  link.download = `${activeDoc.fileName || 'document'}.txt`; //מוריד את המסמך למחשב
-  
-  link.click();//ככה המשתמש רואה את הקובץ שיורד ישירות להורדות
-  URL.revokeObjectURL(url);//ניקוי הזיכרון
-};
+
 
 //פונקציה להתנתקות מהמערכת
   const handleLogout = () => {
@@ -295,7 +290,6 @@ function App() {
         onNewDocument={handleNewDocument}
         onSaveDocument={handleDocumentSave}
         currentUser={currentUser}
-        onSaveAs={handleSaveAsDownload}
       />
       {/*/ חלונית המסמך הערוך*/}
       <div className="documents-container">
