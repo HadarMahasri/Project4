@@ -1,11 +1,20 @@
+/**
+ * רכיב סרגל העיצוב (StyleToolbar)
+ * מספק ממשק משתמש לבחירת צבע, גודל גופן וסוג גופן.
+ * כאשר משנים בחירה באחד מהאפשרויות, הרכיב דוחף את העדכון חזרה לאפליקציה הראשית.
+ */
 export default function StyleToolbar({ currentStyle, onStyleChange, onApplyAll, onUndo, canUndo }) {
+  // פונקציה מקומית שמופעלת כאשר משנים ערך באחד ה-inputs בסרגל (color/font/size)
   const handleLocalStyleChange = (e) => {
+    // משיכת השם של השדה וצורת הערך החדש מתוך אירוע השינוי (למשל name="color", value="#ff0000")
     const { name, value } = e.target;
+    // הפעלת פונקציית העדכון שעברה בתור Prop מהאבא (App.jsx)
     onStyleChange(name, value);
   };
 
   return (
     <div className="toolbar">
+      {/* בחירת צבע טקסט באמצעות כלי הצבעים של הדפדפן */}
       <label>
         Color:
         <input 
@@ -16,6 +25,7 @@ export default function StyleToolbar({ currentStyle, onStyleChange, onApplyAll, 
         />
       </label>
       
+      {/* Dropdown לבחירת גודל הגופן המורכב ממספר אפשרויות קבועות מראש */}
       <label>
         Size:
         <select name="fontSize" value={currentStyle.fontSize} onChange={handleLocalStyleChange}>
@@ -26,6 +36,7 @@ export default function StyleToolbar({ currentStyle, onStyleChange, onApplyAll, 
         </select>
       </label>
 
+      {/* Dropdown לבחירת משפחת הגופן (Font Family) */}
       <label>
         Font:
         <select name="fontFamily" value={currentStyle.fontFamily} onChange={handleLocalStyleChange}>
@@ -36,10 +47,12 @@ export default function StyleToolbar({ currentStyle, onStyleChange, onApplyAll, 
         </select>
       </label>
 
+      {/* כפתור למריחת העיצוב הנוכחי על כל התווים במסמך כולו */}
       <button onClick={onApplyAll} title="Apply current style to all text">
         Apply to All
       </button>
 
+      {/* כפתור ביטול פעולה (Undo) - מופעל רק אם קיימת היסטוריה לשחזור */}
       <button onClick={onUndo} disabled={!canUndo} title="Undo last action">
         Undo ↩
       </button>
