@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import './App.css';
 import DocumentWindow from './components/DocumentWindow/DocumentWindow';
 import StyleToolbar from './components/StyleToolbar/StyleToolbar';
@@ -19,6 +19,7 @@ function App() {
     fileName: ''
   }]);
   const [activeDocId, setActiveDocId] = useState(documents[0].id);
+  const [docToClose, setDocToClose] = useState(null);
 
 //כברירת מחדל סרגל הכלים והתו שנכתוב יהיה בעל צבע שחור,בגודל של 16 ובפונט דיפולטי
 
@@ -30,10 +31,10 @@ function App() {
 
   const activeDoc = documents.find(d => d.id === activeDocId);
 
-   // במידה ובחרנו בתו מיוחד, הסרגל יתאים את עצמו לצבע ולעיצוב של התו עצמו!
-  useEffect(() => {
-    if (selectedCharId && activeDoc) {
-      const charObj = activeDoc.textData.find(c => c.id === selectedCharId);
+  const handleSelectChar = (charId) => {
+    setSelectedCharId(charId);
+    if (charId && activeDoc) {
+      const charObj = activeDoc.textData.find(c => c.id === charId);
       if (charObj) {
         setCurrentStyle({
           color: charObj.color || '#000000',
@@ -42,7 +43,7 @@ function App() {
         });
       }
     }
-  }, [selectedCharId, activeDocId]); // רק עובר כשהיה שינוי תו או החלפת טאב
+  };
 
 //פונקציה למציאת המסמך הפעיל,והחזרתו לאחר העדכון(לפי הפעולה שלחצנו)
 
@@ -187,12 +188,17 @@ function App() {
   };
 //פונקציה לסגירת מסמך
   const handleDocumentClose = (docToRemove) => {
-    if (docToRemove.textData.length > 0 && !window.confirm("Close this document? Unsaved changes may be lost.")) {//המסמך לא ריק וגם לא אישרנו למחוק אז לא יקרה כלום
+    if (docToRemove.textData.length > 0) {
+      setDocToClose(docToRemove);
       return;
     }
+    performClose(docToRemove.id);
+  };
+
+  const performClose = (docId) => {
     setDocuments(prev => {
-      const remaining = prev.filter(d => d.id !== docToRemove.id);//משאירים את כל המסמכים חוץ מהמסמך שמחקנו
-      if (activeDocId === docToRemove.id) {//אם הפוקוס היה על המסמך שרוצים למחוק
+      const remaining = prev.filter(d => d.id !== docId);//משאירים את כל המסמכים חוץ מהמסמך שמחקנו
+      if (activeDocId === docId) {//אם הפוקוס היה על המסמך שרוצים למחוק
         if (remaining.length > 0) {//אם נשארו מסמכים בדף
           setActiveDocId(remaining[remaining.length - 1].id);//נשים פוקוס על המסמך האחרון במערך
         } else {
@@ -201,8 +207,28 @@ function App() {
       }
       return remaining;
     });
+    setDocToClose(null);
   };
-  
+
+  const handleSaveAndClose = () => {
+    if (!docToClose) return;
+    const customName = prompt("Enter a name for your file:", docToClose.fileName || "document");
+    
+    if (customName === null || customName.trim() === "") {
+      return; // סעיף ביטול - לא עושים כלום, החלון לא נסגר
+    } 
+    const textContent = docToClose.textData.map(item => item.char).join('');
+    const blob = new Blob([textContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${customName}.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
+    
+    performClose(docToClose.id);
+  };
+
 //פונקציה לשמירת מסמך
   const handleDocumentSave = (docId, newFileName) => {
     setDocuments(prev => prev.map(doc => {
@@ -285,7 +311,7 @@ function App() {
               onClose={handleDocumentClose}
               searchTerm={findText}
               selectedCharId={selectedCharId} 
-              onSelectChar={setSelectedCharId}
+              onSelectChar={handleSelectChar}
             />
           ))
         )}
@@ -328,6 +354,20 @@ function App() {
           onDeleteAll={handleDeleteAll}
         />
       </div>
+
+      {docToClose && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Save Changes?</h3>
+            <p>Do you want to save "{docToClose.fileName || 'Untitled Document'}" before closing?</p>
+            <div className="modal-buttons">
+              <button className="modal-btn modal-btn-save" onClick={handleSaveAndClose}>Save & Close</button>
+              <button className="modal-btn modal-btn-close" onClick={() => performClose(docToClose.id)}>Close Without Saving</button>
+              <button className="modal-btn modal-btn-cancel" onClick={() => setDocToClose(null)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

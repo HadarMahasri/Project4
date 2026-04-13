@@ -1,38 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './FileManager.css';
 
 const FileManager = ({ activeDocument, onFileOpened, onNewDocument, onSaveDocument, currentUser,onSaveAs }) => {
-  const [savedFiles, setSavedFiles] = useState([]);
+  const [savedFiles, setSavedFiles] = useState(() => {
+    if (!currentUser) return [];
+    try {
+      const filesJson = localStorage.getItem(`editor_files_${currentUser}`);
+      return filesJson ? JSON.parse(filesJson) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const [fileNameInput, setFileNameInput] = useState('');
   const [selectedFile, setSelectedFile] = useState('');
+  const [prevActiveId, setPrevActiveId] = useState('');
 
-  // Load available files from localStorage for the current user
-  useEffect(() => {
-    if (!currentUser) return;
-    
-    const filesJson = localStorage.getItem(`editor_files_${currentUser}`);
-    if (filesJson) {
-      try {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setSavedFiles(JSON.parse(filesJson));
-      } catch (e) {
-        console.error("Failed to parse editor files", e);
-      }
-    } else {
-      setSavedFiles([]); // Reset if new user has no files
-    }
-  }, [currentUser]);
-
-  // Update input when active document changes
-  useEffect(() => {
-    if (activeDocument) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setFileNameInput(activeDocument.fileName || '');
-    } else {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setFileNameInput('');
-    }
-  }, [activeDocument]);
+  if (activeDocument && activeDocument.id !== prevActiveId) {
+    setPrevActiveId(activeDocument.id);
+    setFileNameInput(activeDocument.fileName || '');
+  } else if (!activeDocument && prevActiveId !== '') {
+    setPrevActiveId('');
+    setFileNameInput('');
+  }
 
   const handleSave = () => {
     if (!activeDocument || !fileNameInput.trim() || !currentUser) return;
