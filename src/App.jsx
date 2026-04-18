@@ -10,10 +10,10 @@ function App() {
   // --- ניהול משתמש ומיקוד ---
   // שם המשתמש הנוכחי במערכת (אם ריק - יוצג מסך לוגין)
   const [currentUser, setCurrentUser] = useState(null);
-  
+
   // מתעד האם הפוקוס כעת נמצא על המסמך לעריכה או על שורת החיפוש
   const [focusedInput, setFocusedInput] = useState("document");
-  
+
   // כותב/קורא מהתיבה כאשר נמצאים במצב 'חיפוש'
   const [findText, setFindText] = useState("");
 
@@ -31,20 +31,20 @@ function App() {
 
   // החזקת הרשימה המרכזית (מערך האובייקטים) של המסמכים הפתוחים כרגע בזיכרון המערכת
   const [documents, setDocuments] = useState(() => [createDoc()]);
-  
+
   // מחזיק את ה-ID של הלשונית הפעילה (המסמך שכרגע בפוקוס, כלומר פתוח על המסך)
   const [activeDocId, setActiveDocId] = useState(documents[0]?.id || null);
-  
+
   // שומר את האובייקט של מסמך שנמצא בתהליך 'סגירה' לפני שמירתו הסופית (בחלון מודאלי)
   const [docToClose, setDocToClose] = useState(null);
 
   // טריק כדי להכריח את מנהל הקבצים (FileManager) לבנות (לרנדר) את עצמו מחדש עם הרשימה המעודכנת
   const [fileManagerKey, setFileManagerKey] = useState(0);
-  
+
   // מסך התראה פופ-אפ להזנת שם קובץ חדש אם סוגרים מסכת ללא שם שעבר שינויים
   const [fileNamePrompt, setFileNamePrompt] = useState(false);
   const [tempFileName, setTempFileName] = useState("document");
-  
+
   // ממשק חלונות קופצים להתראה כללית (יכול להציג שגיאות או הודעות הצלחה)
   const [appAlert, setAppAlert] = useState(null);
 
@@ -59,8 +59,14 @@ function App() {
   // שליפת המסמך ה"חי" והפעיל כרגע באמצעות ה-activeDocId מתוך מערך המסמכים הכללי
   const activeDoc = documents.find(d => d.id === activeDocId);
 
-  // פונקציה לבחירת תו בודד במסמך שמחיל עליו מניפולציה מהירה
+  // פונקציה לבחירת תו בודד במסמך שמחיל עליו מניפולציה מהירה (או ביטול בחירה בלחיצה חוזרת)
   const handleSelectChar = (charId) => {
+    if (selectedCharId === charId) {
+      // אם לחצנו על התו שכבר בחור - נשחרר את הבחירה
+      setSelectedCharId(null);
+      return;
+    }
+
     setSelectedCharId(charId);
     if (charId && activeDoc) {
       // אם בחרנו תו, עלינו לעדכן את סרגל העיצוב כך שיציג את התכונות (סגנון) של אותו התו שנבחר
@@ -120,9 +126,9 @@ function App() {
       });
       setSelectedCharId(null); // מבטל את הבחירה אחרי שהחלפנו את האות
     }
-    else if (focusedInput === "find") { 
+    else if (focusedInput === "find") {
       // נמצאים במצב חיפוש - הפניית לחיצות המקלדת אל תיבת החיפוש במקום גוף המסמך!
-      setFindText(char); 
+      setFindText(char);
     }
     else {
       // הקלדה רגילה למסמך הראשי
@@ -213,13 +219,13 @@ function App() {
   // פונקציה לסגירת לשונית מסמך
   const handleDocumentClose = (docToRemove) => {
     if (!docToRemove || !docToRemove.id) return;
-    
+
     // אם יש טקסט במסמך הפתוח שעשוי להיות לא שמור, נחשף פופ-אפ אזהרה לשמירה טרם סגירה
     if (docToRemove.textData && docToRemove.textData.length > 0) {
       setDocToClose(docToRemove);
       return;
     }
-    
+
     // סגירה נקייה אם ריק
     performClose(docToRemove.id);
   };
@@ -230,7 +236,7 @@ function App() {
     setDocuments(prevDocs => {
       // מסננים החוצה את המסמך שנסגר מכלל הרשימה
       const remaining = prevDocs.filter(d => d.id !== docId);
-      
+
       // אם סגרנו את המסמך שהיינו עליו, נחזיר את הפוקוס למסמך האחרון (הימני ביותר)
       if (activeDocId === docId) {
         const nextId = remaining.length > 0 ? remaining[remaining.length - 1].id : null;
@@ -246,9 +252,9 @@ function App() {
 
     let nameToSave = docToClose.fileName;
     if (!nameToSave) {
-      setTempFileName("document"); 
+      setTempFileName("document");
       setFileNamePrompt(true); // הצג חלון שם מילואי
-      return; 
+      return;
     }
 
     executeSaveAndClose(nameToSave);
@@ -326,7 +332,7 @@ function App() {
         onSaveDocument={handleDocumentSave}
         currentUser={currentUser}
       />
-      
+
       {/* אזור חלוניות המסמכים הפתוחות כרגע וממתינות להקלדה */}
       {/* חלונית המסמך הערוך - כל מסמך מקבל טאב */}
       <div className="documents-container">
@@ -340,7 +346,7 @@ function App() {
               isActive={doc.id === activeDocId}
               onClick={(id) => { setActiveDocId(id); setFocusedInput("document"); }}
               onClose={handleDocumentClose}
-              searchTerm={findText}
+              searchTerm={doc.id === activeDocId ? findText : ""}
               selectedCharId={selectedCharId}
               onSelectChar={handleSelectChar}
             />
@@ -350,7 +356,7 @@ function App() {
 
       {/* האזור התחתון - פקדי עריכה. מוצג לא פעיל אם כל החלונות סגורים */}
       <div className="editor-controls" style={{ opacity: activeDocId ? 1 : 0.5, pointerEvents: activeDocId ? 'auto' : 'none' }}>
-        
+
         {/* חיפוש - מחזיר תיבת טקסט נפרדת שנוכל ללוות במיקוד של המקלדת אליה */}
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '10px' }}>
           <input
@@ -370,7 +376,7 @@ function App() {
           />
           <button onClick={() => { setFindText(""); setFocusedInput("document"); }}>X</button>
         </div>
-        
+
         {/* כלי העיצוב - פקדים המשמשים את המשתמש הראשי לבקש עיצוב שמועבר באמצעות props אל currentStyle */}
         <StyleToolbar
           currentStyle={currentStyle}
@@ -379,7 +385,7 @@ function App() {
           onUndo={undo}
           canUndo={activeDoc?.history?.length > 0} // מאפשר לבטל רק אם ההיסטוריה לא ריקה
         />
-        
+
         {/* המקלדת הוירטואלית שעושה שימוש בפונקציות המחיקה וההקלדה שהוגדרו כאן */}
         <VirtualKeyboard
           onKeyPress={handleKeyPress}
@@ -390,7 +396,7 @@ function App() {
       </div>
 
       {/* ------ חלוניות מודאליות - מופיעות למעלה כהתראה מעל שאר הלוגיקה ------ */}
-      
+
       {/* פופ אפ ששואל אם לשמור לפני סגירה של קובץ עם תוכן */}
       {docToClose && !fileNamePrompt && (
         <div className="modal-overlay">
@@ -411,12 +417,12 @@ function App() {
         <div className="modal-overlay">
           <div className="modal-content">
             <h3>Enter File Name</h3>
-            <input 
-               type="text" 
-               value={tempFileName} 
-               onChange={(e) => setTempFileName(e.target.value)}
-               autoFocus
-               style={{ width: '85%', padding: '12px', marginBottom: '20px', borderRadius: '6px', border: '2px solid var(--primary-blue)', fontSize: '18px', outline: 'none', textAlign: 'center', transition: 'border-color 0.2s', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)' }} 
+            <input
+              type="text"
+              value={tempFileName}
+              onChange={(e) => setTempFileName(e.target.value)}
+              autoFocus
+              style={{ width: '85%', padding: '12px', marginBottom: '20px', borderRadius: '6px', border: '2px solid var(--primary-blue)', fontSize: '18px', outline: 'none', textAlign: 'center', transition: 'border-color 0.2s', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)' }}
             />
             <div className="modal-buttons">
               <button className="modal-btn modal-btn-save" onClick={() => {
@@ -429,7 +435,7 @@ function App() {
         </div>
       )}
 
-      {/* פופ אפ ירוק ויפה המוכיח הצלחה בשמירה ונותן פידבק למשתמש למנוע בלבול */}
+      {/* פופ אפ הצלחה בשמירה ונותן פידבק למשתמש למנוע בלבול */}
       {appAlert && (
         <div className="modal-overlay">
           <div className="modal-content" style={{ padding: '30px' }}>

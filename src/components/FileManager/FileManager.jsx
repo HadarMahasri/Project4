@@ -23,10 +23,10 @@ const FileManager = ({ activeDocument, onFileOpened, onNewDocument, onSaveDocume
 
   // החזקת מצב לשם הקובץ שאותו עורכים עכשיו בתיבת הטקסט
   const [fileNameInput, setFileNameInput] = useState('');
-  
+
   // החזקת שם הקובץ שנבחר מתוך רשימת הגלילה (Dropdown)
   const [selectedFile, setSelectedFile] = useState('');
-  
+
   // מעקב אחרי המסמך האחרון שהיה פעיל כדי לעדכן את תיבת הטקסט בהתאם כשעוברים מסמך
   const [prevActiveId, setPrevActiveId] = useState('');
 
@@ -59,7 +59,7 @@ const FileManager = ({ activeDocument, onFileOpened, onNewDocument, onSaveDocume
     // קריאה לפונקציה מרכיב האב (App) כדי לעדכן את שם הקובץ במבנה הנתונים הראשי של המסמך
     onSaveDocument(activeDocument.id, name);
     // הקפצת הודעת הצלחה
-    setFmAlert({ message: `הקובץ "${name}" נשמר בהצלחה!`, isError: false });
+    setFmAlert({ message: `File "${name}" saved successfully!`, isError: false });
   };
 
   // פונקציה לטיפול בלחיצה על 'פתח' (טעינת קובץ)
@@ -76,7 +76,7 @@ const FileManager = ({ activeDocument, onFileOpened, onNewDocument, onSaveDocume
         setSelectedFile(''); // איפוס הבחירה כדי למנוע טעינה חוזרת בטעות
       } catch (e) {
         console.error("Failed to load file", e);
-        setFmAlert({ message: "קובץ פגום.", isError: true });
+        setFmAlert({ message: "Corrupted file.", isError: true });
       }
     }
   };
@@ -87,9 +87,9 @@ const FileManager = ({ activeDocument, onFileOpened, onNewDocument, onSaveDocume
   return (
     <div className="file-manager">
       <div className="file-group">
-        <span className="file-manager-title">📁 ניהול קבצים</span>
+        <span className="file-manager-title">📁 File Manager</span>
         <button className="btn-load" style={{ padding: '6px 12px', fontSize: '12px' }} onClick={onNewDocument}>
-          ➕ מסמך חדש
+          ➕ New Document
         </button>
       </div>
 
@@ -98,7 +98,7 @@ const FileManager = ({ activeDocument, onFileOpened, onNewDocument, onSaveDocume
         <input
           type="text"
           className="file-input"
-          placeholder="הכנס שם קובץ..."
+          placeholder="Enter file name..."
           value={fileNameInput}
           onChange={(e) => setFileNameInput(e.target.value)}
           disabled={!hasActive}
@@ -108,7 +108,7 @@ const FileManager = ({ activeDocument, onFileOpened, onNewDocument, onSaveDocume
           onClick={handleSave}
           disabled={!hasActive || !fileNameInput.trim()}
         >
-          💾 שמור
+          💾 Save
         </button>
       </div>
 
@@ -119,7 +119,7 @@ const FileManager = ({ activeDocument, onFileOpened, onNewDocument, onSaveDocume
           value={selectedFile}
           onChange={(e) => setSelectedFile(e.target.value)}
         >
-          <option value="" disabled>בחר קובץ לפתיחה...</option>
+          <option value="" disabled>Choose file to open...</option>
           {savedFiles.map(file => (
             <option key={file} value={file}>{file}</option>
           ))}
@@ -129,7 +129,7 @@ const FileManager = ({ activeDocument, onFileOpened, onNewDocument, onSaveDocume
           onClick={handleLoad}
           disabled={!selectedFile}
         >
-          📂 פתח
+          📂 Open
         </button>
       </div>
 
@@ -141,16 +141,16 @@ const FileManager = ({ activeDocument, onFileOpened, onNewDocument, onSaveDocume
               {fmAlert.isError ? '✖' : '✓'}
             </div>
             <h3 style={{ color: fmAlert.isError ? '#f44336' : '#4caf50', fontSize: '24px', margin: '0 0 10px 0' }}>
-              {fmAlert.isError ? 'שגיאה' : 'הצלחה'}
+              {fmAlert.isError ? 'Error' : 'Success'}
             </h3>
             <p style={{ fontSize: '16px', color: '#555', marginBottom: '25px' }}>{fmAlert.message}</p>
             <div className="modal-buttons">
-              <button 
-                className="modal-btn modal-btn-save" 
-                style={{ width: '100%', backgroundColor: fmAlert.isError ? '#f44336' : 'var(--primary-blue)' }} 
+              <button
+                className="modal-btn modal-btn-save"
+                style={{ width: '100%', backgroundColor: fmAlert.isError ? '#f44336' : 'var(--primary-blue)' }}
                 onClick={() => setFmAlert(null)}
               >
-                אישור
+                OK
               </button>
             </div>
           </div>
